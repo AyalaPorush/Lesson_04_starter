@@ -41,4 +41,14 @@ def test_wrong_client_is_rejected(sample_event):
         )
     assert err.value.code == "FORBIDDEN"      
 
-            
+@pytest.mark.req("REQ-SEL-04")
+def test_rejected_selection_does_not_mutate_event(sample_event):
+    import copy
+    original_event = copy.deepcopy(sample_event)
+    
+    with pytest.raises(selection_core.SelectionError):
+        selection_core.submit_selection(
+            sample_event, "cli_100", ["med_9"], ["add_to_album"]
+        )
+        
+    assert sample_event == original_event            

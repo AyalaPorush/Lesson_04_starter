@@ -35,6 +35,7 @@ def submit_selection(event: dict, actor_id: str, media_ids: list, service_codes:
     Returns the new selection. Raises SelectionError on any rule violation,
     and in that case leaves the event unchanged.
     """
+
     if actor_id != event.get("client_id"):
         raise SelectionError("FORBIDDEN")
     if not isinstance(media_ids, list) or len(media_ids) == 0:
@@ -43,6 +44,17 @@ def submit_selection(event: dict, actor_id: str, media_ids: list, service_codes:
     for code in service_codes:
         if code not in enabled:
             raise SelectionError("SERVICE_NOT_AVAILABLE")
+
+    event_media_ids = {
+        media_id
+        for gallery in event.get("galleries", [])
+        for media_id in gallery.get("media", [])
+    }
+    for media_id in media_ids:
+        if media_id not in event_media_ids:
+            raise SelectionError("MEDIA_NOT_IN_EVENT")
+        
+
 
     selections = event.setdefault("selections", [])
     selection = {
